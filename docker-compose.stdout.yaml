@@ -1,0 +1,17 @@
+version: "3"
+services:
+  fluent-bit:
+    image: fluent/fluent-bit:1.4-debug
+    # environment:
+    #   # environment variables tbc
+      # DUMMY: 1
+    volumes:
+      # Config:
+      - ./config/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./config/fluent-bit-service.conf:/fluent-bit/etc/fluent-bit-service.conf
+      - ./config/fluent-bit-input.conf:/fluent-bit/etc/fluent-bit-input.conf
+      - ./config/fluent-bit-filter.conf:/fluent-bit/etc/fluent-bit-filter.conf
+      - ./config/fluent-bit-output.stdout.conf:/fluent-bit/etc/fluent-bit-output.conf
+      # Input logs
+      - ./inputs:/var/log/containers
+    entrypoint: ["fluent-bit/bin/fluent-bit", "-c", "fluent-bit/etc/fluent-bit.conf"]

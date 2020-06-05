@@ -1,0 +1,82 @@
+version: "3"
+services:
+
+  fluent-bit:
+    image: fluent/fluent-bit:1.4-debug
+    container_name: fluent-bit
+    volumes:
+      # ElasticSearch healthcheck script
+      - ./scripts/wait-for-service.sh:/fluent-bit/wait-for-service.sh
+      # Config:
+      - ./config/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./config/fluent-bit-service.conf:/fluent-bit/etc/fluent-bit-service.conf
+      - ./config/fluent-bit-input.conf:/fluent-bit/etc/fluent-bit-input.conf
+      - ./config/fluent-bit-filter.conf:/fluent-bit/etc/fluent-bit-filter.conf
+      - ./config/fluent-bit-output.esout.conf:/fluent-bit/etc/fluent-bit-output.conf
+      # Input logs
+      - ./inputs:/var/log/containers
+      # Storage for error buffers that can't get flushed to ElasticSearch, if filesystem buffering is enabled:
+      # ...this needs to be a named docker volume if using Mac OS...
+      # ...because Mac OS filesystem is not compatible :(...
+      - flb-buffer:/var/log/flb-storage
+    entrypoint: [
+      # Check ElasticSearch is running before starting Fluent Bit
+      sh,
+      ./fluent-bit/wait-for-service.sh,
+      elasticsearch,
+      host.docker.internal,
+      "9200",
+      # Once ES is up, FLB can start
+      fluent-bit/bin/fluent-bit,
+      -c,
+      fluent-bit/etc/fluent-bit.conf
+    ]
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    container_name: elasticsearch
+    environment:
+      - cluster.name=elasticsearch
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      # ElasticSearch reachable on localhost:9200
+      - 9200:9200
+      - 9300:9300
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.3.2
+    container_name: kibana
+    ports:
+      # Kibana dashboards reachable on localhost:5061
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
+  # This is a barebones container to explore the flb buffers
+  # ...this workaround is necessary as we can't mount directly...
+  # ...onto a Mac OS formatted filesystem :(...
+  flb-buffer:
+    image: busybox
+    container_name: flb-buffer
+    volumes:
+      - flb-buffer:/tmp/buffer
+    working_dir: /tmp/buffer
+    entrypoint: [
+      /bin/sh,
+      -c,
+      'sleep infinity'
+    ]
+
+volumes:
+  flb-buffer:
+    driver: local
