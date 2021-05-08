@@ -14,4 +14,6 @@ services:
       - ./config/fluent-bit-output.stdout.conf:/fluent-bit/etc/fluent-bit-output.conf
       # Input logs
       - ./inputs:/var/log/containers
+      # Lua Scrips:
+      - ./scripts/buffer.lua:/fluent-bit/etc/fluent-bit-script.lua
     entrypoint: ["fluent-bit/bin/fluent-bit", "-c", "fluent-bit/etc/fluent-bit.conf"]

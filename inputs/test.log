@@ -1,0 +1,5 @@
+{"id":1,"url":"http://test.com/error","level":"warn","trace_id":"one","msg":"request started"}
+{"id":2,"url":"http://test.com/error","level":"warn","trace_id":"one","msg":"something"}
+{"id":3,"url":"http://test.com/ok","status":200,"level":"warn","trace_id":"two","msg":"request done"}
+{"id":4,"url":"http://test.com/error","level":"error","trace_id":"one","msg":"threw an error"}
+{"id":5,"url":"http://test.com/error","status":500,"level":"info","trace_id":"one","msg":"request failed"}
