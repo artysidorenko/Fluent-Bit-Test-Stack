@@ -32,7 +32,7 @@ end
 
 function PersistToDisk(buffer, directory)
   local index = io.open(''..directory..'index.txt', 'w')
-  for k, v in pairs(Buffer) do
+  for k, v in pairs(buffer) do
     local file = io.open(''..directory..''..k..'.txt', 'w')
     -- first line is the maxLevel value
     file:write(v['maxLevel'], '\n')
@@ -47,6 +47,10 @@ function PersistToDisk(buffer, directory)
   index:close()
 end
 
+function DeleteTrace(buffer, trace_id, directory)
+  buffer[trace_id] = nil
+  os.remove(''..directory..''..trace_id..'.txt')
+end
 
 -- INITIALISATION
 
@@ -110,12 +114,12 @@ function FingersCrossed(tag, timestamp, record)
       PrintTrace(Buffer, trace_id)
     end
 
-    -- remove completed trace from the Buffer
-    Buffer[trace_id] = nil
+    -- remove completed trace from the Buffer and disk
+    DeleteTrace(Buffer, trace_id, '/fluent-bit/etc/temp/')
 
-    -- back up Buffer contents in case of restart/failure
-    PersistToDisk(Buffer, '/fluent-bit/etc/temp/')
+    -- back up rest of Buffer contents in case of restart/failure
   end
+  PersistToDisk(Buffer, '/fluent-bit/etc/temp/')
 
   return code, timestamp, record
 end
