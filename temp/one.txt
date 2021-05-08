@@ -1,0 +1,3 @@
+50
+{"level":"warn", "trace_id":"one", "id":66, "url":"http:\/\/test.com\/error", "msg":"old one"}
+{"level":"warn", "trace_id":"one", "id":44, "url":"http:\/\/test.com\/error", "msg":"something else"}

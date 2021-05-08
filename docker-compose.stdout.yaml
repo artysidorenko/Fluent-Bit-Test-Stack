@@ -16,4 +16,7 @@ services:
       - ./inputs:/var/log/containers
       # Lua Scrips:
       - ./scripts/buffer.lua:/fluent-bit/etc/fluent-bit-script.lua
+      - ./scripts/json.lua:/fluent-bit/etc/json.lua
+      # Temp Folder
+      - ./temp:/fluent-bit/etc/temp
     entrypoint: ["fluent-bit/bin/fluent-bit", "-c", "fluent-bit/etc/fluent-bit.conf"]
